@@ -71,4 +71,4 @@ jobs:
         run: |
           git add driver/src/global/version.h
           git commit -m "Update version.h with Git metadata [skip ci]"
-          git push github HEAD
+          git push origin HEAD
