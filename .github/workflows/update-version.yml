@@ -17,6 +17,11 @@ jobs:
         with:
           fetch-depth: 0  # Full history for accurate Git metadata
 
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Update version.h with Git metadata
         run: |
           # Get Git metadata
@@ -30,16 +35,16 @@ jobs:
           # Create the file with a default template if it doesn't exist
           if [ ! -f "$FILE_TO_UPDATE" ]; then
             mkdir -p "$(dirname "$FILE_TO_UPDATE")"
-            cat > "$FILE_TO_UPDATE" << EOL
-#ifndef VERSION_H
-#define VERSION_H
-
-#define GIT_HASH "unknown"
-#define GIT_BRANCH "unknown"
-#define BUILD_DATE "unknown"
-
-#endif // VERSION_H
-EOL
+            {
+              echo "#ifndef VERSION_H"
+              echo "#define VERSION_H"
+              echo ""
+              echo "#define GIT_HASH \"unknown\""
+              echo "#define GIT_BRANCH \"unknown\""
+              echo "#define BUILD_DATE \"unknown\""
+              echo ""
+              echo "#endif // VERSION_H"
+            } > "$FILE_TO_UPDATE"
           fi
 
           # Update the macros in version.h
