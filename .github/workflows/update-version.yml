@@ -69,10 +69,6 @@ jobs:
 
       - name: Commit and push changes
         run: |
-          if git diff --quiet driver/src/global/version.h; then
-            echo "No changes to commit"
-            exit 0
-          fi
           git add driver/src/global/version.h
           git commit -m "Update version.h with Git metadata [skip ci]"
           git push github HEAD
