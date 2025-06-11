@@ -32,8 +32,13 @@ jobs:
           # Define the file to update
           FILE_TO_UPDATE="driver/src/global/version.h"
 
-          # Create the file with a default template if it doesn't exist
-          if [ ! -f "$FILE_TO_UPDATE" ]; then
+          # Debug: Check if file exists and show its content
+          echo "Checking if $FILE_TO_UPDATE exists..."
+          if [ -f "$FILE_TO_UPDATE" ]; then
+            echo "$FILE_TO_UPDATE exists. Current content:"
+            cat "$FILE_TO_UPDATE"
+          else
+            echo "$FILE_TO_UPDATE does not exist. Creating it..."
             mkdir -p "$(dirname "$FILE_TO_UPDATE")"
             {
               echo "#ifndef VERSION_H"
@@ -45,20 +50,35 @@ jobs:
               echo ""
               echo "#endif // VERSION_H"
             } > "$FILE_TO_UPDATE"
+            echo "Created $FILE_TO_UPDATE. Content:"
+            cat "$FILE_TO_UPDATE"
           fi
 
+          # Debug: Show Git metadata
+          echo "Git metadata: HASH=$GIT_HASH, BRANCH=$GIT_BRANCH, DATE=$BUILD_DATE"
+
           # Update the macros in version.h
-          sed -i 's/#define[[:space:]]\+GIT_HASH[[:space:]]\+".*"/#define GIT_HASH "'"$GIT_HASH"'"/g' "$FILE_TO_UPDATE"
-          sed -i 's/#define[[:space:]]\+GIT_BRANCH[[:space:]]\+".*"/#define GIT_BRANCH "'"$GIT_BRANCH"'"/g' "$FILE_TO_UPDATE"
-          sed -i 's/#define[[:space:]]\+BUILD_DATE[[:space:]]\+".*"/#define BUILD_DATE "'"$BUILD_DATE"'"/g' "$FILE_TO_UPDATE"
+          echo "Updating $FILE_TO_UPDATE..."
+          sed -i "s/#define[[:space:]]\+GIT_HASH[[:space:]]\+\".*\"/#define GIT_HASH \"$GIT_HASH\"/g" "$FILE_TO_UPDATE"
+          sed -i "s/#define[[:space:]]\+GIT_BRANCH[[:space:]]\+\".*\"/#define GIT_BRANCH \"$GIT_BRANCH\"/g" "$FILE_TO_UPDATE"
+          sed -i "s/#define[[:space:]]\+BUILD_DATE[[:space:]]\+\".*\"/#define BUILD_DATE \"$BUILD_DATE\"/g" "$FILE_TO_UPDATE"
+
+          # Debug: Show file content after update
+          echo "Content of $FILE_TO_UPDATE after sed:"
+          cat "$FILE_TO_UPDATE"
 
           # Verify the file was updated
+          echo "Verifying updates..."
           if grep -q "#define GIT_HASH \"$GIT_HASH\"" "$FILE_TO_UPDATE" && \
              grep -q "#define GIT_BRANCH \"$GIT_BRANCH\"" "$FILE_TO_UPDATE" && \
              grep -q "#define BUILD_DATE \"$BUILD_DATE\"" "$FILE_TO_UPDATE"; then
-            echo "Updated $FILE_TO_UPDATE with Git hash $GIT_HASH, branch $GIT_BRANCH, and build date $BUILD_DATE."
+            echo "Successfully updated $FILE_TO_UPDATE with Git hash $GIT_HASH, branch $GIT_BRANCH, and build date $BUILD_DATE."
           else
             echo "Error: Failed to update $FILE_TO_UPDATE with Git metadata."
+            echo "Checking each macro:"
+            grep "#define GIT_HASH \"$GIT_HASH\"" "$FILE_TO_UPDATE" || echo "GIT_HASH not found or incorrect."
+            grep "#define GIT_BRANCH \"$GIT_BRANCH\"" "$FILE_TO_UPDATE" || echo "GIT_BRANCH not found or incorrect."
+            grep "#define BUILD_DATE \"$BUILD_DATE\"" "$FILE_TO_UPDATE" || echo "BUILD_DATE not found or incorrect."
             exit 1
           fi
 
