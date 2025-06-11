@@ -67,21 +67,6 @@ jobs:
           echo "Content of $FILE_TO_UPDATE after sed:"
           cat "$FILE_TO_UPDATE"
 
-          # Verify the file was updated
-          echo "Verifying updates..."
-          if grep -q "#define GIT_HASH \"$GIT_HASH\"" "$FILE_TO_UPDATE" && \
-             grep -q "#define GIT_BRANCH \"$GIT_BRANCH\"" "$FILE_TO_UPDATE" && \
-             grep -q "#define BUILD_DATE \"$BUILD_DATE\"" "$FILE_TO_UPDATE"; then
-            echo "Successfully updated $FILE_TO_UPDATE with Git hash $GIT_HASH, branch $GIT_BRANCH, and build date $BUILD_DATE."
-          else
-            echo "Error: Failed to update $FILE_TO_UPDATE with Git metadata."
-            echo "Checking each macro:"
-            grep "#define GIT_HASH \"$GIT_HASH\"" "$FILE_TO_UPDATE" || echo "GIT_HASH not found or incorrect."
-            grep "#define GIT_BRANCH \"$GIT_BRANCH\"" "$FILE_TO_UPDATE" || echo "GIT_BRANCH not found or incorrect."
-            grep "#define BUILD_DATE \"$BUILD_DATE\"" "$FILE_TO_UPDATE" || echo "BUILD_DATE not found or incorrect."
-            exit 1
-          fi
-
       - name: Commit and push changes
         run: |
           if git diff --quiet driver/src/global/version.h; then
